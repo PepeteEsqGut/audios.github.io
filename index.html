@@ -75,8 +75,14 @@
 
         // 2. Inicializar el reproductor cuando la API esté lista
         function onYouTubeIframeAPIReady() {
+            // Pedir el ID del video o enlace al cargar la página
+            var videoId = prompt("Ingresa el ID del video o el enlace completo de YouTube:");
+
+            // Extraer el ID del video desde el enlace o usar el ID proporcionado
+            videoId = extractVideoId(videoId);
+
             player = new YT.Player('player', {
-                videoId: 'dn7Ilip_P4I',  // Reemplaza con el ID del video
+                videoId: videoId,  // Usar el ID proporcionado
                 events: {
                     'onReady': onPlayerReady,
                     'onStateChange': onPlayerStateChange
@@ -88,23 +94,31 @@
         function onPlayerReady(event) {
             duration = player.getDuration();  // Obtener la duración del video
             document.getElementById('duration').innerText = formatTime(duration);
-
-            // Reproducir automáticamente al cargar, pero silenciado para que funcione en móviles
-            player.unmute(); // Silenciar el audio
-            player.playVideo();
         }
 
-        // 4. Reproducir el audio manualmente
+        // 4. Función para extraer el ID del video desde el enlace o ID
+        function extractVideoId(input) {
+            var videoId = input;
+            // Si es un enlace completo, extraer el ID
+            var regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+            var match = input.match(regex);
+            if (match) {
+                videoId = match[1];
+            }
+            return videoId;
+        }
+
+        // 5. Reproducir el audio
         function playAudio() {
             player.playVideo();
         }
 
-        // 5. Pausar el audio
+        // 6. Pausar el audio
         function pauseAudio() {
             player.pauseVideo();
         }
 
-        // 6. Controlar el estado del reproductor
+        // 7. Controlar el estado del reproductor
         function onPlayerStateChange(event) {
             if (event.data == YT.PlayerState.PLAYING) {
                 // Actualizar la barra de progreso cada segundo
@@ -112,7 +126,7 @@
             }
         }
 
-        // 7. Función para actualizar la barra de progreso
+        // 8. Función para actualizar la barra de progreso
         function updateProgressBar() {
             var currentTime = player.getCurrentTime();  // Tiempo actual del video
             var progress = (currentTime / duration) * 100;  // Porcentaje completado
@@ -120,7 +134,7 @@
             document.getElementById('currentTime').innerText = formatTime(currentTime);
         }
 
-        // 8. Función para buscar una nueva posición en el video cuando se hace clic en la barra
+        // 9. Función para buscar una nueva posición en el video cuando se hace clic en la barra
         function seek(event) {
             var progressBar = document.getElementById('progressBar');
             var clickPosition = event.offsetX / progressBar.offsetWidth;  // Porcentaje clicado
@@ -128,7 +142,7 @@
             player.seekTo(newTime, true);  // Saltar a la nueva posición
         }
 
-        // 9. Formatear el tiempo en minutos y segundos
+        // 10. Formatear el tiempo en minutos y segundos
         function formatTime(time) {
             var minutes = Math.floor(time / 60);
             var seconds = Math.floor(time % 60);
@@ -137,15 +151,6 @@
             }
             return minutes + ':' + seconds;
         }
-        
     </script>
-    <button onclick="iniciarAudio()">Iniciar Audio</button>
-    <script>
-        function iniciarAudio() {
-            player.unMute(); // Activa el audio si estaba en mute
-            player.playVideo(); // Reproduce el video/audio
-        }
-    </script>
-    
 </body>
 </html>
