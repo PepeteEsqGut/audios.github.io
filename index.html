@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reproducir audio de YouTube en móviles</title>
+    <style>
+        /* Ajustar la barra de progreso y otros elementos para pantallas pequeñas */
+        #progressBar {
+            width: 80%;
+            height: 10px;
+            background-color: #e0e0e0;
+            margin: 20px auto;
+            border-radius: 5px;
+            cursor: pointer;
+            position: relative;
+        }
+        #progress {
+            height: 100%;
+            background-color: #76a9ea;
+            width: 0;
+            border-radius: 5px;
+        }
+        #time {
+            text-align: center;
+            font-size: 1rem;
+        }
+        button {
+            font-size: 1.2rem;
+            padding: 10px 20px;
+            margin: 10px;
+        }
+
+        /* Estilo para pantallas más pequeñas */
+        @media (max-width: 600px) {
+            #progressBar {
+                width: 90%;
+            }
+            button {
+                font-size: 1rem;
+                padding: 8px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Reproducir audio de YouTube en móviles</h1>
+
+    <!-- Botón para reproducir el audio -->
+    <button onclick="playAudio()">Reproducir</button>
+    <button onclick="pauseAudio()">Pausar</button>
+
+    <!-- Barra de progreso personalizada -->
+    <div id="progressBar" onclick="seek(event)">
+        <div id="progress"></div>
+    </div>
+
+    <!-- Tiempo de reproducción -->
+    <div id="time">
+        <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+    </div>
+
+    <!-- Reproductor de YouTube oculto -->
+    <div id="player" style="display: none;"></div>
+
+    <script>
+        // 1. Cargar la API del reproductor de YouTube
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        var player;
+        var duration = 0;
+
+        // 2. Inicializar el reproductor cuando la API esté lista
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                videoId: 'dn7Ilip_P4I',  // Reemplaza con el ID del video
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        // 3. Iniciar el reproductor cuando esté listo
+        function onPlayerReady(event) {
+            duration = player.getDuration();  // Obtener la duración del video
+            document.getElementById('duration').innerText = formatTime(duration);
+
+            // Reproducir automáticamente al cargar, pero silenciado para que funcione en móviles
+            player.unmute(); // Silenciar el audio
+            player.playVideo();
+        }
+
+        // 4. Reproducir el audio manualmente
+        function playAudio() {
+            player.playVideo();
+        }
+
+        // 5. Pausar el audio
+        function pauseAudio() {
+            player.pauseVideo();
+        }
+
+        // 6. Controlar el estado del reproductor
+        function onPlayerStateChange(event) {
+            if (event.data == YT.PlayerState.PLAYING) {
+                // Actualizar la barra de progreso cada segundo
+                setInterval(updateProgressBar, 1000);
+            }
+        }
+
+        // 7. Función para actualizar la barra de progreso
+        function updateProgressBar() {
+            var currentTime = player.getCurrentTime();  // Tiempo actual del video
+            var progress = (currentTime / duration) * 100;  // Porcentaje completado
+            document.getElementById('progress').style.width = progress + '%';
+            document.getElementById('currentTime').innerText = formatTime(currentTime);
+        }
+
+        // 8. Función para buscar una nueva posición en el video cuando se hace clic en la barra
+        function seek(event) {
+            var progressBar = document.getElementById('progressBar');
+            var clickPosition = event.offsetX / progressBar.offsetWidth;  // Porcentaje clicado
+            var newTime = clickPosition * duration;  // Nuevo tiempo en segundos
+            player.seekTo(newTime, true);  // Saltar a la nueva posición
+        }
+
+        // 9. Formatear el tiempo en minutos y segundos
+        function formatTime(time) {
+            var minutes = Math.floor(time / 60);
+            var seconds = Math.floor(time % 60);
+            if (seconds < 10) {
+                seconds = '0' + seconds;
+            }
+            return minutes + ':' + seconds;
+        }
+        
+    </script>
+    <button onclick="iniciarAudio()">Iniciar Audio</button>
+    <script>
+        function iniciarAudio() {
+            player.unMute(); // Activa el audio si estaba en mute
+            player.playVideo(); // Reproduce el video/audio
+        }
+    </script>
+    
+</body>
+</html>
